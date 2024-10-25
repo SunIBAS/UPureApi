@@ -3,8 +3,13 @@ package Bina
 import (
 	"UPureApi/Core/HttpUtils/BinaHttpUtils"
 	"UPureApi/Core/HttpUtils/BinaHttpUtils/BinaApis"
-	"UPureApi/Core/HttpUtils/BinaHttpUtils/BinaApis/UsdsMarginedFutures/Market"
-	"UPureApi/Core/HttpUtils/BinaHttpUtils/BinaApis/UsdsMarginedFutures/Trade"
+	"UPureApi/Core/HttpUtils/BinaHttpUtils/BinaApis/UsdtMarginedFutures/Account/UMFAccountBalance"
+	"UPureApi/Core/HttpUtils/BinaHttpUtils/BinaApis/UsdtMarginedFutures/Market/UMFMarketKLine"
+	"UPureApi/Core/HttpUtils/BinaHttpUtils/BinaApis/UsdtMarginedFutures/Trade/UMFTradeLeverage"
+	"UPureApi/Core/HttpUtils/BinaHttpUtils/BinaApis/UsdtMarginedFutures/Trade/UMFTradeMarginType"
+	"UPureApi/Core/HttpUtils/BinaHttpUtils/BinaApis/UsdtMarginedFutures/Trade/UMFTradeOpen"
+	"UPureApi/Core/HttpUtils/BinaHttpUtils/BinaApis/UsdtMarginedFutures/Trade/UMFTradeOrder"
+	"UPureApi/Core/HttpUtils/BinaHttpUtils/BinaApis/UsdtMarginedFutures/Trade/UMFTradeOrderAll"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -31,8 +36,8 @@ func runApi(api BinaHttpUtils.Api) {
 }
 
 func TestKLineList(t *testing.T) {
-	api := Market.CreateKLineApi(
-		Market.KLineListApiParam{
+	api := UMFMarketKLine.CreateKLineApi(
+		UMFMarketKLine.KLineListApiParam{
 			Symbol:    "BTCUSDT",
 			Interval:  BinaApis.Interval1m,
 			StartTime: 0,
@@ -44,8 +49,8 @@ func TestKLineList(t *testing.T) {
 }
 
 func TestOrderAll(t *testing.T) {
-	orderQueryApi := Trade.CreateOrderAllApi(
-		Trade.OrderAllParams{
+	orderQueryApi := UMFTradeOrderAll.CreateOrderAllApi(
+		UMFTradeOrderAll.OrderAllParam{
 			Symbol: "DOGEUSDT",
 		},
 	)
@@ -53,8 +58,8 @@ func TestOrderAll(t *testing.T) {
 }
 
 func TestOrderQuery(t *testing.T) {
-	orderQueryApi := Trade.CreateOpenOrderApi(
-		Trade.OpenOrderParams{
+	orderQueryApi := UMFTradeOpen.CreateOpenOrderApi(
+		UMFTradeOpen.OpenParam{
 			Symbol: "DOGEUSDT",
 		},
 	)
@@ -66,35 +71,35 @@ func TestTrade(t *testing.T) {
 	testParams := []struct {
 		qty   float64
 		price float64
-		order Trade.StopOrder
+		order UMFTradeOrder.StopOrder
 	}{
 		{
 			qty:   0.02,
 			price: 1000,
-			order: Trade.StartOrderLongLimit,
+			order: UMFTradeOrder.StartOrderLongLimit,
 		},
 		{
 			qty:   0.01,
 			price: 5000,
-			order: Trade.StartOrderShortLimit,
+			order: UMFTradeOrder.StartOrderShortLimit,
 		},
 		{
 			qty:   0.02,
 			price: 1000,
-			order: Trade.StartOrderLongMarket,
+			order: UMFTradeOrder.StartOrderLongMarket,
 		},
 		{
 			qty:   0.02,
 			price: 5000,
-			order: Trade.StartOrderShortMarket,
+			order: UMFTradeOrder.StartOrderShortMarket,
 		},
 	}
 	for _, param := range testParams {
-		orderParam := Trade.OrderParam{
+		orderParam := UMFTradeOrder.OrderParam{
 			Symbol: "ETHUSDT",
 		}
 		orderParam.OrderParamOrder(param.qty, param.order, param.price)
-		api := Trade.CreateOrderApi(
+		api := UMFTradeOrder.CreateOrderApi(
 			orderParam,
 		)
 		runApi(api)
@@ -106,37 +111,37 @@ func TestTradeProfileStop(t *testing.T) {
 	testParams := []struct {
 		price float64
 		qty   float64
-		order Trade.StopOrder
+		order UMFTradeOrder.StopOrder
 		desc  string
 	}{
 		{
 			desc:  "止盈多单",
 			price: 3000,
 			qty:   1,
-			order: Trade.StopOrderLongProfit,
+			order: UMFTradeOrder.StopOrderLongProfit,
 		},
 		{
 			desc:  "止损多单",
 			price: 1000,
 			qty:   1,
-			order: Trade.StopOrderLongLoss,
+			order: UMFTradeOrder.StopOrderLongLoss,
 		},
 		{
 			desc:  "止盈空单",
 			price: 1000,
 			qty:   1,
-			order: Trade.StopOrderShortProfit,
+			order: UMFTradeOrder.StopOrderShortProfit,
 		},
 		{
 			desc:  "止损空单",
 			price: 3000,
 			qty:   1,
-			order: Trade.StopOrderShortLoss,
+			order: UMFTradeOrder.StopOrderShortLoss,
 		},
 	}
 	for _, param := range testParams {
 		fmt.Println(fmt.Sprintf("=====[%s]=====", param.desc))
-		stopLongProfitParam := Trade.OrderParam{
+		stopLongProfitParam := UMFTradeOrder.OrderParam{
 			Symbol:          "ETHUSDT",
 			Type:            "",
 			Side:            "",
@@ -152,7 +157,7 @@ func TestTradeProfileStop(t *testing.T) {
 		}
 		// 止盈多单
 		stopLongProfitParam.OrderParamStopProfit(param.price, param.qty, param.order)
-		stopLongProfit := Trade.CreateOrderApi(stopLongProfitParam)
+		stopLongProfit := UMFTradeOrder.CreateOrderApi(stopLongProfitParam)
 		stopLongProfit.Path = "/fapi/v1/order"
 		runApi(stopLongProfit)
 	}
@@ -160,17 +165,17 @@ func TestTradeProfileStop(t *testing.T) {
 
 // 设置杠杆和持仓方式
 func TestSetLeverageAndMarginType(t *testing.T) {
-	setLeverage := Trade.CreateLeverAgeParam(
-		Trade.LeverAgeParam{
+	setLeverage := UMFTradeLeverage.CreateLeverAgeApi(
+		UMFTradeLeverage.LeverAgeParam{
 			Symbol:   "ETHUSDT",
 			Leverage: 100,
 		},
 	)
 	runApi(setLeverage)
-	setMarginType := Trade.CreateMarginTypeParam(
-		Trade.MarginTypeParam{
+	setMarginType := UMFTradeMarginType.CreateMarginTypeApi(
+		UMFTradeMarginType.MarginTypeParam{
 			Symbol:     "BTCUSDT",
-			MarginType: Trade.MarginTypeCROSSED,
+			MarginType: UMFTradeMarginType.MarginTypeCROSSED,
 		},
 	)
 	runApi(setMarginType)
@@ -179,4 +184,14 @@ func TestSetLeverageAndMarginType(t *testing.T) {
 func TestTimestamp(t *testing.T) {
 	tt := strconv.FormatInt(time.Now().UnixMilli(), 10)
 	fmt.Println(tt)
+}
+
+func TestBalance(t *testing.T) {
+	server := createServe()
+	api := UMFAccountBalance.CreateBalanceApi(
+		UMFAccountBalance.BalanceParam{},
+	)
+	ret, _ := server.Request(api)
+	balance := UMFAccountBalance.ParseResponseToBalance(ret)
+	fmt.Println(balance)
 }

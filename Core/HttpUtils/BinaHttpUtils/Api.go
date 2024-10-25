@@ -1,7 +1,7 @@
 package BinaHttpUtils
 
 import (
-	"UPureApi/Core/HttpUtils"
+	"UPureApi/Core/HttpUtils/HttpUtilsCore"
 	"net/http"
 )
 
@@ -12,13 +12,13 @@ type Params interface {
 type ParamMap map[string]string
 
 func (p ParamMap) ToString() string {
-	return HttpUtils.Params2string(p, HttpUtils.ToString)
+	return HttpUtilsCore.Params2string(p, HttpUtilsCore.ToString)
 }
 
 type Api struct {
 	NoTimeStamp bool
 	Path        string
-	HttpMethod  HttpUtils.HttpMethod
+	HttpMethod  HttpUtilsCore.HttpMethod
 	QueryParams Params
 	BodyParams  Params
 	Sign        bool

@@ -4,8 +4,8 @@ import (
 	"UPureApi/Bina/App/GetWave"
 	"UPureApi/Bina/Utils"
 	"UPureApi/Core/HttpUtils/BinaHttpUtils/BinaApis"
-	"UPureApi/Core/HttpUtils/BinaHttpUtils/BinaApis/UsdsMarginedFutures/Market"
-	Utils2 "UPureApi/Core/HttpUtils/BinaHttpUtils/BinaApis/Utils"
+	"UPureApi/Core/HttpUtils/BinaHttpUtils/BinaApis/UsdtMarginedFutures/Market/UMFMarketExchangeInfo"
+	"UPureApi/Core/HttpUtils/BinaHttpUtils/BinaApis/UsdtMarginedFutures/Market/UMFMarketPremiumIndex"
 	"fmt"
 	"testing"
 )
@@ -34,19 +34,19 @@ func TestGetWave(t *testing.T) {
 }
 
 func TestPremiumIndex(t *testing.T) {
-	api := Market.CreatePremiumIndexApi(
-		Market.PremiumIndex{},
+	api := UMFMarketPremiumIndex.CreatePremiumIndexApi(
+		UMFMarketPremiumIndex.PremiumIndexParam{},
 	)
 	server := Utils.CreateServe(configFile)
 	ret, _ := server.Request(api)
-	pre := Utils2.ParsePremiumIndexReturn(ret)
+	pre := UMFMarketPremiumIndex.ParsePremiumIndexResponse(ret)
 	fmt.Println(pre)
 }
 
 func TestExchangeInfo(t *testing.T) {
-	api := Market.CreateExchangeInfoApi()
+	api := UMFMarketExchangeInfo.CreateExchangeInfoApi(UMFMarketExchangeInfo.ExchangeInfoParam{})
 	server := Utils.CreateServe(configFile)
 	ret, _ := server.Request(api)
-	info := Utils2.ParseExchangeInfo(ret)
+	info := UMFMarketExchangeInfo.ParseExchangeInfoResponse(ret)
 	fmt.Println(info)
 }

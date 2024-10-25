@@ -2,7 +2,7 @@ package Model
 
 import (
 	"UPureApi/Core/HttpUtils/BinaHttpUtils/BinaApis"
-	Utils2 "UPureApi/Core/HttpUtils/BinaHttpUtils/BinaApis/Utils"
+	"UPureApi/Core/HttpUtils/BinaHttpUtils/BinaApis/UsdtMarginedFutures/Market/UMFMarketKLine"
 )
 
 type KLineSortInfo struct {
@@ -14,7 +14,7 @@ type KLineSortInfo struct {
 }
 type KLineSortInfoArr []KLineSortInfo
 
-func BuildKLineSortInfo(symbol string, line []Utils2.KLine) KLineSortInfo {
+func BuildKLineSortInfo(symbol string, line []UMFMarketKLine.KLineResponse) KLineSortInfo {
 	l := len(line)
 	kInfo := KLineSortInfo{
 		Symbol:    symbol,

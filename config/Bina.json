@@ -9,5 +9,5 @@
         "secret_key": "RsPHKzK9EN1V5w0xa5go1MQHZiBMIC12pAT3ObwkQ1uVa3ozqdtAPWiKCJa4SlU9"
     },
     "base_url": "https://fapi.binance.com",
-    "log": true
+    "log": false
 }

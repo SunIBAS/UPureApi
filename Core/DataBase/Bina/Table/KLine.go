@@ -1,7 +1,7 @@
 package Table
 
 import (
-	"UPureApi/Core/HttpUtils/BinaHttpUtils/BinaApis/Utils"
+	"UPureApi/Core/HttpUtils/BinaHttpUtils/BinaApis/UsdtMarginedFutures/Market/UMFMarketKLine"
 	"fmt"
 )
 
@@ -21,7 +21,7 @@ type KLine struct {
 	Ignore            string  `json:"ignore"`            // 随机数
 }
 
-func ApiKLine2KLine(symbol string, k Utils.KLine) KLine {
+func ApiKLine2KLine(symbol string, k UMFMarketKLine.KLineResponse) KLine {
 	return KLine{
 		Id:                fmt.Sprintf("%s_%d", symbol, k.OpenTime),
 		OpenTime:          k.OpenTime,
