@@ -9,6 +9,8 @@
 
 - 文件目录
 
+[Bina UsdtMarginedFutures 设计规划](./Core/HttpUtils/BinaHttpUtils/readme.md)
+
 ```text
 D:.
 │  go.mod
@@ -28,24 +30,24 @@ D:.
 │      │  HttpUtils.go
 │      │  readme.md
 │      │
-│      └─BinaHttpUtils  // bina 二次封装的 请求类
+│      ├─BinaHttpUtils  // bina 二次封装的 请求类
+│      │   │  Api.go
+│      │   │  httpUtils.go
+│      │   │  Signalture.go
+│      │   │
+│      │   └─BinaApis   // bina 的 API 封装
+│      │       │  Core.go   // 公用的枚举类
+│      │       │
+│      │       ├─UsdtMarginedFutures  // Usdt 本位合约
+│      │       │      ... 查看对应位置的 readme.md
+│      │       │
+│      │       └─Utils 工具类
+│      │
+│      └─OkxHttpUtils  // okx 二次封装的 请求类
 │          │  Api.go
 │          │  httpUtils.go
 │          │  Signalture.go
-│          │
-│          └─BinaApis   // bina 的 API 封装
-│              │  Core.go   // 公用的枚举类
-│              │
-│              ├─KLine  // 对应 kline 目录下的接口
-│              │      List.go
-│              │
-│              └─UsdsMarginedFuturesOrder // 对应 U 本位目录下的接口
-│                      All.go
-│                      const.go
-│                      OpenOrder.go
-│                      Order.go
-│                      Query.go
-│                      readme.md
+│          └─OkxApis   // okx 的 API 封装
 │
 ├─OKex
 │

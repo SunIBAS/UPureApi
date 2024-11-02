@@ -33,6 +33,15 @@ const (
 	PositionSideShort PositionSideType = "SHORT"
 )
 
+type OrigType string
+
+const (
+	// OrigTypeStopMarket 市价止损
+	OrigTypeStopMarket OrigType = "STOP_MARKET"
+	// OrigTypeProfitMarket 市价止盈
+	OrigTypeProfitMarket OrigType = "TAKE_PROFIT_MARKET"
+)
+
 type BoolType string
 
 const (

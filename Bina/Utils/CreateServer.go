@@ -13,3 +13,11 @@ func CreateServe(configFile string) BinaHttpUtils.BinaHttpUtils {
 	json.Unmarshal(bs, &config)
 	return BinaHttpUtils.NewBinaHttpUtilsFromConfig(config)
 }
+
+func ParseConfig(configFile string) BinaHttpUtils.BinaHttpUtilsConfig {
+	//configFile := "D:\\all_code\\UPureApi\\config\\Bina.json"
+	var config BinaHttpUtils.BinaHttpUtilsConfig
+	bs, _ := ioutil.ReadFile(configFile)
+	json.Unmarshal(bs, &config)
+	return config
+}

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"UPureApi/Bina/App/GetWave"
+	"UPureApi/Bina/App/GetWave/GetWaveCore"
 	"UPureApi/Core/HttpUtils/BinaHttpUtils/BinaApis"
 	"encoding/json"
 	"fmt"
@@ -12,7 +12,7 @@ var configFile = "D:\\all_code\\UPureApi\\config\\Bina.json"
 
 func main() {
 	// 创建一个 读取 类
-	gw := GetWave.NewGetWave(configFile, GetWave.GetWaveKLineInfo{
+	gw := GetWaveCore.NewGetWave(configFile, GetWaveCore.GetWaveKLineInfo{
 		Interval: BinaApis.Interval15m,
 		Limit:    4 * 24 * 2,
 	})

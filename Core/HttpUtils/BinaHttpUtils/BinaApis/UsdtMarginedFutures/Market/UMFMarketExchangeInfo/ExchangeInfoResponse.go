@@ -1,5 +1,7 @@
 package UMFMarketExchangeInfo
 
+import "UPureApi/Core/CoreUtils"
+
 // ExchangeInfoResponse 结构体定义
 type ExchangeInfoResponse struct {
 	Assets          []Asset       `json:"assets"`
@@ -25,10 +27,11 @@ type Asset struct {
 }
 
 type Symbol struct {
-	BaseAsset          string   `json:"baseAsset"`
-	BaseAssetPrecision int      `json:"baseAssetPrecision"`
-	ContractType       string   `json:"contractType"`
-	DeliveryDate       int64    `json:"deliveryDate"`
+	BaseAsset          string `json:"baseAsset"`
+	BaseAssetPrecision int    `json:"baseAssetPrecision"`
+	ContractType       string `json:"contractType"`
+	DeliveryDate       int64  `json:"deliveryDate"`
+	// https://binance-docs.github.io/apidocs/futures/cn/#cc81fff589
 	Filters            []Filter `json:"filters"`
 	LiquidationFee     string   `json:"liquidationFee"`
 	MaintMarginPercent string   `json:"maintMarginPercent"`
@@ -36,7 +39,7 @@ type Symbol struct {
 	MarketTakeBound    string   `json:"marketTakeBound"`
 	MaxMoveOrderLimit  int      `json:"maxMoveOrderLimit"`
 	OnboardDate        int64    `json:"onboardDate"`
-	OrderTypes         []string `json:"OrderType"`
+	OrderTypes         []string `json:"OrderTypes"`
 	Pair               string   `json:"pair"`
 	PricePrecision     int      `json:"pricePrecision"`
 	QuantityPrecision  int      `json:"quantityPrecision"`
@@ -68,4 +71,9 @@ type Filter struct {
 	MultiplierUp      string `json:"multiplierUp,omitempty"`
 	MultiplierDown    string `json:"multiplierDown,omitempty"`
 	MultiplierDecimal string `json:"multiplierDecimal,omitempty"`
+}
+
+// CanOrder 是否包含订单类型
+func (symbol Symbol) CanOrder(orderList []string) bool {
+	return CoreUtils.AllStringElementsInList(orderList, symbol.OrderTypes)
 }

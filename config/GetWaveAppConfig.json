@@ -1,0 +1,18 @@
+{
+    "proxy": {
+        "porto": "http",
+        "host": "127.0.0.1",
+        "port": "7890"
+    },
+    "key": {
+        "api_key": "BSNdoFJX9D3qmnOw6iIfKawJuqozWQICQtbplecWo9er8x2xKpgkfQxS4NJBUg2d",
+        "secret_key": "RsPHKzK9EN1V5w0xa5go1MQHZiBMIC12pAT3ObwkQ1uVa3ozqdtAPWiKCJa4SlU9"
+    },
+    "base_url": "https://fapi.binance.com",
+    "log": true,
+    "dbPath": "D:\\all_code\\UPureApi\\config\\gw.db",
+    "maxMargins": 45,
+    "profitRate": 0.01,
+    "stopRate": 0.02,
+    "saveLinePath": "D:\\all_code\\UPureApi\\config\\lines"
+}

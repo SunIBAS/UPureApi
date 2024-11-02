@@ -3,6 +3,7 @@ package Bina
 import (
 	"UPureApi/Core/HttpUtils/BinaHttpUtils"
 	"UPureApi/Core/HttpUtils/BinaHttpUtils/BinaApis"
+	"UPureApi/Core/HttpUtils/BinaHttpUtils/BinaApis/UsdtMarginedFutures/Account/UMFAccountAccount"
 	"UPureApi/Core/HttpUtils/BinaHttpUtils/BinaApis/UsdtMarginedFutures/Account/UMFAccountBalance"
 	"UPureApi/Core/HttpUtils/BinaHttpUtils/BinaApis/UsdtMarginedFutures/Market/UMFMarketKLine"
 	"UPureApi/Core/HttpUtils/BinaHttpUtils/BinaApis/UsdtMarginedFutures/Trade/UMFTradeLeverage"
@@ -10,21 +11,12 @@ import (
 	"UPureApi/Core/HttpUtils/BinaHttpUtils/BinaApis/UsdtMarginedFutures/Trade/UMFTradeOpen"
 	"UPureApi/Core/HttpUtils/BinaHttpUtils/BinaApis/UsdtMarginedFutures/Trade/UMFTradeOrder"
 	"UPureApi/Core/HttpUtils/BinaHttpUtils/BinaApis/UsdtMarginedFutures/Trade/UMFTradeOrderAll"
-	"encoding/json"
+	"UPureApi/Core/HttpUtils/BinaHttpUtils/BinaApis/UsdtMarginedFutures/Trade/UMFTradeOrderDelete"
 	"fmt"
-	"io/ioutil"
 	"strconv"
 	"testing"
 	"time"
 )
-
-func createServe() BinaHttpUtils.BinaHttpUtils {
-	configFile := "D:\\all_code\\UPureApi\\config\\Bina.json"
-	var config BinaHttpUtils.BinaHttpUtilsConfig
-	bs, _ := ioutil.ReadFile(configFile)
-	json.Unmarshal(bs, &config)
-	return BinaHttpUtils.NewBinaHttpUtilsFromConfig(config)
-}
 
 func runApi(api BinaHttpUtils.Api) {
 	server := createServe()
@@ -58,7 +50,7 @@ func TestOrderAll(t *testing.T) {
 }
 
 func TestOrderQuery(t *testing.T) {
-	orderQueryApi := UMFTradeOpen.CreateOpenOrderApi(
+	orderQueryApi := UMFTradeOpen.CreateOpenApi(
 		UMFTradeOpen.OpenParam{
 			Symbol: "DOGEUSDT",
 		},
@@ -194,4 +186,65 @@ func TestBalance(t *testing.T) {
 	ret, _ := server.Request(api)
 	balance := UMFAccountBalance.ParseResponseToBalance(ret)
 	fmt.Println(balance)
+}
+
+func TestAccount(t *testing.T) {
+	server := createServe()
+	api := UMFAccountAccount.CreateAccountApi(
+		UMFAccountAccount.AccountParam{},
+	)
+	ret, _ := server.Request(api)
+	balance := UMFAccountAccount.ParseResponseToBalance(ret)
+	fmt.Println(balance)
+}
+
+// 查看挂单
+func TestOpenOrder(t *testing.T) {
+	server := createServe()
+	api := UMFTradeOpen.CreateOpenApi(
+		UMFTradeOpen.OpenParam{
+			Symbol: "ETHUSDT",
+		},
+	)
+	ret, _ := server.Request(api)
+	order := UMFTradeOpen.ParseResponseToBalance(ret)
+	fmt.Println(order)
+}
+
+// 测试 挂单 之后 撤单
+func TestOrderThenReverse(t *testing.T) {
+	symbol := "BTCUSDT"
+	server := createServe()
+	orderParam := UMFTradeOrder.OrderParam{
+		Symbol: symbol,
+	}
+	// 止盈单, {8w} 时 {1} 张 [symbol] {止盈}
+	orderParam.OrderParamStopProfit(80000, 1, UMFTradeOrder.StopOrderLongProfit)
+	api := UMFTradeOrder.CreateOrderApi(orderParam)
+	l, _ := server.RequestL(api, true)
+	fmt.Println(l)
+
+	// 等待 2 秒
+	time.Sleep(time.Second * 2)
+
+	openRet, _ := server.RequestL(UMFTradeOpen.CreateOpenApi(UMFTradeOpen.OpenParam{
+		Symbol: symbol,
+	}), true)
+	open := UMFTradeOpen.ParseResponseToBalance(openRet)
+	// 打印出挂了哪些单
+	fmt.Println(open)
+
+	for _, o := range open {
+		// 避免意外，这里只 撤销 symbol 的挂单
+		if o.Symbol == symbol {
+			api := UMFTradeOrderDelete.CreateOrderDeleteApi(UMFTradeOrderDelete.OrderDeleteParam{
+				Symbol:  symbol,
+				OrderId: o.OrderId,
+			})
+			deleteRet, _ := server.RequestL(api, true)
+			fmt.Println(deleteRet)
+		} else {
+			fmt.Printf("[Question] %T\r\n", o)
+		}
+	}
 }

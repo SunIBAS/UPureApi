@@ -44,3 +44,24 @@ func ParseResponseToBalance(str string) []BalanceResponse {
 	}
 	return bResp
 }
+
+type BalanceResponseArr []BalanceResponse
+
+func (bArr BalanceResponseArr) GetBuySymbolName(symbol string) BalanceResponse {
+	for _, b := range bArr {
+		if b.Asset == symbol {
+			return b
+		}
+	}
+	return BalanceResponse{
+		AccountAlias:       "",
+		Asset:              "",
+		Balance:            "0",
+		CrossWalletBalance: "",
+		CrossUnPnl:         "",
+		AvailableBalance:   "",
+		MaxWithdrawAmount:  "",
+		MarginAvailable:    false,
+		UpdateTime:         0,
+	}
+}

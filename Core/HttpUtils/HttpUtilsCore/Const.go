@@ -3,8 +3,9 @@ package HttpUtilsCore
 type HttpMethod int
 
 const (
-	HttpGet  = HttpMethod(1)
-	HttpPost = HttpMethod(2)
+	HttpGet    = HttpMethod(1)
+	HttpPost   = HttpMethod(2)
+	HttpDelete = HttpMethod(3)
 )
 
 type Api struct {
@@ -18,6 +19,8 @@ func (hm HttpMethod) MethodName() string {
 		return "GET"
 	} else if hm == HttpPost {
 		return "POST"
+	} else if hm == HttpDelete {
+		return "DELETE"
 	} else {
 		return ""
 	}

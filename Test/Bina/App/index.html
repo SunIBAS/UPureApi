@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="./../../../JS/echarts.min.js"></script>
+<!--    <script src="./../../../config/klines.json"></script>-->
+</head>
+<body>
+<script>
+    fetch('./../../../config/klines.json').then(_ => _.json()).then(j => {
+        window.jsons = j;
+    })
+</script>
+</body>
+</html>

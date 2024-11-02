@@ -3,6 +3,7 @@ package UMFMarketKLine
 import (
 	"UPureApi/Core/CoreUtils"
 	"encoding/json"
+	"fmt"
 )
 
 type KLineResponse struct {
@@ -24,7 +25,7 @@ func ParseKLineResponse(jsonData string) []KLineResponse {
 	var rawItems [][]interface{}
 	err := json.Unmarshal([]byte(jsonData), &rawItems)
 	if err != nil {
-		//fmt.Println("Error unmarshaling JSON:", err)
+		fmt.Println("Error unmarshaling JSON:", err)
 		return nil
 	}
 	// 准备一个用于存放结构化数据的切片

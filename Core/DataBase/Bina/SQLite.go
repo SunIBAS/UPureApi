@@ -29,6 +29,7 @@ func (sq *SQLite) Init() error {
 	sq.db.AutoMigrate(&Table.Config{})
 	sq.db.AutoMigrate(&Table.KLine{})
 	sq.db.AutoMigrate(&Table.Brackets{})
+	sq.db.AutoMigrate(&Table.GetWaveOrder{})
 
 	return err
 }

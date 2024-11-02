@@ -1,0 +1,129 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script src="./../../../JS/echarts.min.js"></script>
+    <style>
+        body {
+            padding: 0;
+            margin: 0;
+            overflow: hidden;
+        }
+        #chart {
+            width: 100vw;
+            height: 100vh;
+        }
+    </style>
+</head>
+<body>
+
+<div id="chart"></div>
+
+<script>
+    function ts2str(ts) {
+        const d = new Date(ts);
+        return `${d.getMonth()+1}/${d.getDate()}#${d.getHours()}:${d.getMinutes()}`;
+    };
+    const ec = echarts.init(document.getElementById("chart"));
+
+    fetch('./../../../config/lines/095d6dea-9717-11ef-958d-e4b97a239394').then(_=>_.json()).then(ret => {
+        window.ret = ret;
+        const openPrice = (ret.order.shortStop + ret.order.longStop) / 2;
+        const option = {
+            xAxis: {
+                data: []
+            },
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'cross'
+                }
+            },
+            yAxis: {
+                scale: true,
+                splitArea: {
+                    show: true
+                }
+            },
+            dataZoom: [
+                {
+                    type: 'inside',
+                    start: 50,
+                    end: 100
+                },
+                {
+                    show: true,
+                    type: 'slider',
+                    top: '90%',
+                    start: 50,
+                    end: 100
+                }
+            ],
+            series: [
+                {
+                    type: 'candlestick',
+                    data: []
+                },
+                {
+                    type: "candlestick",
+                    markPoint: {
+                        data: [
+                            {
+                                name: 'Mark',
+                                coord: [
+                                    ts2str(ret.order.startTime - ret.order.startTime % 60000 + 60000),
+                                    openPrice
+                                ],
+                                value: openPrice,
+                            }
+                        ]
+                    },
+                    markLine: {
+                        symbol: ['none', 'none'],
+                        data: [
+                            {
+                                name: "open",
+                                yAxis: openPrice,
+                                lineStyle: {color: '#ffa652'}
+                            },
+                            {
+                                name: "shortProfit",
+                                yAxis: ret.order.shortProfit,
+                                lineStyle: {color: '#4bffba'}
+                            },
+                            {
+                                name: "shortStop",
+                                yAxis: ret.order.shortStop,
+                                lineStyle: {color: '#e84242'}
+                            },
+                            {
+                                name: "longProfit",
+                                yAxis: ret.order.longProfit,
+                                lineStyle: {color: '#4bffba'}
+                            },
+                            {
+                                name: "longStop",
+                                yAxis: ret.order.longStop,
+                                lineStyle: {color: '#e84242'}
+                            },
+                        ]
+                    }
+                }
+            ]
+        };
+        ret.lines.forEach(l => {
+            option.xAxis.data.push(ts2str(l.openTime));
+            option.series[0].data.push([
+                l.open, l.close, l.low, l.high
+            ]);
+        });
+        ec.setOption(option);
+        console.log(option)
+    })
+
+</script>
+</body>
+</html>

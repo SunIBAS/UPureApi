@@ -40,7 +40,7 @@ Balance 是具体接口名称
 > 接口文件编写规则
 
 ```go
-package UMFAccountBalance
+package BUMFAccountBalance
 
 import (
 	"UPureApi/Core/HttpUtils"
@@ -108,6 +108,58 @@ func PParseBalanceResponseTable(s string) TableBalance {
 }
 ```
 
+- GoLand 模板
+
+> 建议将下面内容作为 goLand 的模板进行使用
+
+![BinaGoLandParamTemplate](./../../../image/BinaGoLandParamTemplate.png)
+
+![UseBinaGoLandParamTemplate](./../../../image/UseBinaGoLandParamTemplate.png)
+
+
+```gotemplate
+package ${GO_PACKAGE_NAME}
+
+import (
+	"UPureApi/Core/HttpUtils/BinaHttpUtils"
+	"UPureApi/Core/HttpUtils/HttpUtilsCore"
+)
+
+// Create Time : ${TIME}
+
+type ${NAME}Param struct {
+}
+
+func (param ${NAME}Param)ToMap() BinaHttpUtils.ParamMap {
+    return map[string]string {}
+}
+
+func Create${NAME}Api(param ${NAME}Param) BinaHttpUtils.Api {
+    return BinaHttpUtils.Api{
+    NoTimeStamp: false,
+		Path:        "",
+// 		HttpMethod:  HttpUtilsCore.HttpGet,
+//		HttpMethod:  HttpUtilsCore.HttpPost,
+		QueryParams: param,
+		BodyParams:  nil,
+//		Sign:        true,
+//		Sign:        false,
+		Header:      nil,
+    }
+}
+
+// type ${NAME}Response struct {}
+
+// func ParseResponseToBalance(str string) ${NAME}Response {
+// 	var resp ${NAME}Response
+// 	err := json.Unmarshal([]byte(str), &resp)
+// 	if err!=nil {
+// 		fmt.Println(err.Error())
+// 	}
+// 	return resp
+// }
+```
+
 - API 编写
 
 [githu API](https://binance-docs.github.io/apidocs/futures/cn/#trade-3)
@@ -115,63 +167,3 @@ func PParseBalanceResponseTable(s string) TableBalance {
 [现货 API DOC](https://developers.binance.com/docs/zh-CN/binance-spot-api-docs/rest-api)
 
 [合约 API DOC](https://developers.binance.com/docs/zh-CN/derivatives)
-
-```text
-└─UsdsMarginedFutures   U本位合约
-    ├─Market             行情接口
-    │      List.go
-    │
-    └─Trade             交易接口
-            All.go      查询所有挂单
-            const.go    常量
-            OpenOrder.go    开单
-            Order.go    历史订单
-            Query.go    通过特定条件查询订单
-            readme.md
-```
-
-- 文件命名规则
-
-1. 目录以 文档的 URL 中 rest-api 的前一个单词为主
-2. 接口名称可以是 URL 最后一个短语或请求的最后一个 单词
-3. 当存在 POST PUT DELETE GET 公用一个 api 时，请使用 2 中的第一个方法
-
-![img.png](../../../image/BinaApiNamed.png)
-
-- API 编写方法
-
-```go
-package Trade
-
-import (
-	"UPureApi/Core/HttpUtils"
-	"UPureApi/Core/HttpUtils/BinaHttpUtils"
-	"UPureApi/Core/HttpUtils/BinaHttpUtils/BinaApis"
-)
-
-// file : TestOne.go
-//type [驼峰是文件名]Params struct
-type TestOneParams struct {
-	// 这里将所有需要提交服务器的参数列出
-	Symbol string
-}
-
-func (testOneParams TestOneParams) ToMap() BinaHttpUtils.ParamMap {
-	m := map[string]string {
-		"symbol": BinaApis.CheckEmptyString(testOneParams.Symbol),
-    }
-	return m
-}
-func CreateOrderAllApi(testOneParams TestOneParams) BinaHttpUtils.Api {
-	// 这里根据实际写，有的接口可能同时需要 query 和 body 参数，这里只需要 query
-	// 所以 bodyParams 用来一个空参数
-	return BinaHttpUtils.Api{
-		Path:        "/fapi/v1/allOrders",
-		HttpMethod:  HttpUtils.HttpGet,
-		QueryParams: testOneParams,
-		BodyParams:  BinaApis.EmptyParams{},
-		Sign:        true,
-		Header:      HttpUtils.DefaultHeader,
-    }
-}
-```

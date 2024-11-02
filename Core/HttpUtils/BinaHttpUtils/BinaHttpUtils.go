@@ -63,6 +63,9 @@ result = [%s]
 }
 
 func (binaHttpUtils *BinaHttpUtils) Request(api Api) (string, error) {
+	return binaHttpUtils.RequestL(api, false)
+}
+func (binaHttpUtils *BinaHttpUtils) RequestL(api Api, log bool) (string, error) {
 	queryStringMap := api.QueryParams.ToMap()
 	//bodyMap := api.QueryParams.ToMap()
 	//queryStringMap["recvWindow"] = "6000000"
@@ -101,6 +104,11 @@ func (binaHttpUtils *BinaHttpUtils) Request(api Api) (string, error) {
 	} else {
 		url = fmt.Sprintf("%s?%s", urlPart[0], strings.Join(urlPart[1:], "&"))
 	}
+
+	if log {
+		fmt.Println(fmt.Sprintf("[%s] %s", api.HttpMethod.MethodName(), url))
+	}
+
 	if api.HttpMethod == HttpUtilsCore.HttpPost {
 		return binaHttpUtils.Post(
 			url,
@@ -110,6 +118,11 @@ func (binaHttpUtils *BinaHttpUtils) Request(api Api) (string, error) {
 		)
 	} else if api.HttpMethod == HttpUtilsCore.HttpGet {
 		return binaHttpUtils.Get(
+			url,
+			api.Header,
+		)
+	} else if api.HttpMethod == HttpUtilsCore.HttpDelete {
+		return binaHttpUtils.Delete(
 			url,
 			api.Header,
 		)
@@ -141,6 +154,21 @@ func (binaHttpUtils *BinaHttpUtils) Get(Path string, header http.Header) (string
 	}
 	return binaHttpUtils.request.ToRequest(
 		HttpUtilsCore.HttpGet,
+		fmt.Sprintf("%s%s", host, Path),
+		header,
+		nil,
+	)
+}
+func (binaHttpUtils *BinaHttpUtils) Delete(Path string, header http.Header) (string, error) {
+	if binaHttpUtils.Log {
+		fmt.Printf("method = POST\r\nurl = %s\r\nheader = %s\r\n", fmt.Sprintf("%s%s", binaHttpUtils.BaseUrl, Path), header)
+	}
+	host := binaHttpUtils.BaseUrl
+	if Path[0:4] == "http" {
+		host = ""
+	}
+	return binaHttpUtils.request.ToRequest(
+		HttpUtilsCore.HttpDelete,
 		fmt.Sprintf("%s%s", host, Path),
 		header,
 		nil,
