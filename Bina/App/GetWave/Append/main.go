@@ -34,6 +34,7 @@ type config struct {
 }
 
 var conf config
+var db *Bina.SQLite
 
 func parseConfig() {
 	bs, _ := ioutil.ReadFile(os.Args[1])
@@ -105,37 +106,75 @@ func runFetchLine() {
 				queue.removeFirst()
 				continue
 			}
-			api := UMFMarketKLine.CreateKLineApi(
-				UMFMarketKLine.KLineListApiParam{
-					Symbol:    j.Pair,
-					Interval:  BinaApis.Interval1m,
-					StartTime: j.Start,
-					EndTime:   j.End,
-					Limit:     1500,
-				},
-			)
-
-			ret, err := server.Request(api)
+			err := _fetchKLineLoop(j, server)
 			if err != nil {
-				fmt.Println(err)
-				continue
+				// 任何错误出现都导致改请求失败
 			} else {
-				fmt.Println(fmt.Sprintf("job success over [%s]", j.Order.OrderId))
-				queue.removeFirst()
+				if db != nil {
+					db.GetDb().Delete(&Table.GetWaveOrder{OrderId: j.Order.OrderId})
+				}
 			}
-			j.Lines = UMFMarketKLine.ParseKLineResponse(ret)
-			fmt.Println(j)
-			bs, err := json.Marshal(j)
-			if err != nil {
-				fmt.Println(fmt.Sprintf("json marshal err = [%s]", err.Error()))
-			}
-			ioutil.WriteFile(getJobFileByOrderId(j.Order.OrderId), bs, fs.ModeAppend)
 		}
 	}
 }
+
+// 如果 k 节点多于 1500 ，则需要多次请求
+func _fetchKLineLoop(j job, server BinaHttpUtils.BinaHttpUtils) error {
+	startTime := j.Start - j.Start%CoreUtils.Time1m
+	endTime := j.End + CoreUtils.Time1m - j.End%CoreUtils.Time1m
+	count := int((startTime - endTime) / CoreUtils.Time1m)
+	times := [][]int64{}
+	fetchTime := 0
+	for {
+		times = append(times, []int64{
+			startTime, startTime + 1500*CoreUtils.Time1M,
+		})
+		count -= 1500
+		fetchTime++
+		if count < 0 {
+			break
+		}
+		if fetchTime > 10 {
+			// 不应该放这么久的
+			break
+		}
+	}
+
+	j.Lines = []UMFMarketKLine.KLineResponse{}
+
+	for idx := 0; idx < fetchTime; idx++ {
+		api := UMFMarketKLine.CreateKLineApi(
+			UMFMarketKLine.KLineListApiParam{
+				Symbol:    j.Pair,
+				Interval:  BinaApis.Interval1m,
+				StartTime: times[idx][0],
+				EndTime:   times[idx][1],
+				Limit:     1500,
+			},
+		)
+		ret, err := server.Request(api)
+		if err != nil {
+			fmt.Println(err)
+			return err
+		} else {
+			fmt.Println(fmt.Sprintf("job success over [%s]", j.Order.OrderId))
+			queue.removeFirst()
+		}
+		j.Lines = append(j.Lines, UMFMarketKLine.ParseKLineResponse(ret)...)
+	}
+	//fmt.Println(j)
+	bs, err := json.Marshal(j)
+	if err != nil {
+		fmt.Println(fmt.Sprintf("json marshal err = [%s]", err.Error()))
+		return err
+	}
+	err = ioutil.WriteFile(getJobFileByOrderId(j.Order.OrderId), bs, fs.ModeAppend)
+	return err
+}
+
 func runFetchDb() {
 	// ① 从数据库获取最后一个执行的订单数据
-	db := Bina.SQLite{
+	db = &Bina.SQLite{
 		Path: conf.DbPath,
 	}
 	db.Init()
@@ -147,6 +186,9 @@ func runFetchDb() {
 		for _, order := range orders {
 			orderFile := getJobFileByOrderId(order.OrderId)
 			if fileExists(orderFile) {
+				if db != nil {
+					db.GetDb().Delete(&Table.GetWaveOrder{OrderId: order.OrderId})
+				}
 				continue
 			}
 			oldOrders = append(oldOrders, order)

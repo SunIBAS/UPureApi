@@ -6,21 +6,34 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Document</title>
     <script src="./../../../JS/echarts.min.js"></script>
+    <script src="./../../../JS/openFile.js"></script>
     <style>
         body {
             padding: 0;
             margin: 0;
             overflow: hidden;
         }
-        #chart {
+        .panel {
             width: 100vw;
             height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .title {
+            height: 40px;
+        }
+        #chart {
+            flex: 1;
         }
     </style>
 </head>
 <body>
-
-<div id="chart"></div>
+<div class="panel">
+    <div class="title">
+        <button id="openJsonFileBtn">打开新的文件</button> <span id="filename">filename []</span>
+    </div>
+    <div id="chart"></div>
+</div>
 
 <script>
     function ts2str(ts) {
@@ -29,9 +42,15 @@
     };
     const ec = echarts.init(document.getElementById("chart"));
 
-    fetch('./../../../config/lines/095d6dea-9717-11ef-958d-e4b97a239394').then(_=>_.json()).then(ret => {
-        window.ret = ret;
+    function parseJsonFileContent(data) {
+        const ret = data.data;
+        document.getElementById('filename').innerText = `filename [${data.name}]`;
         const openPrice = (ret.order.shortStop + ret.order.longStop) / 2;
+        const shortProfit = ret.order.shortProfit;
+        const shortStop = ret.order.shortStop;
+        const longProfit = ret.order.longProfit;
+        const longStop = ret.order.longStop;
+        const buyTime = ret.order.startTime - ret.order.startTime % 60000 + 60000;
         const option = {
             xAxis: {
                 data: []
@@ -48,20 +67,20 @@
                     show: true
                 }
             },
-            dataZoom: [
-                {
-                    type: 'inside',
-                    start: 50,
-                    end: 100
-                },
-                {
-                    show: true,
-                    type: 'slider',
-                    top: '90%',
-                    start: 50,
-                    end: 100
-                }
-            ],
+            // dataZoom: [
+            //     {
+            //         type: 'inside',
+            //         start: 50,
+            //         end: 100
+            //     },
+            //     {
+            //         show: true,
+            //         type: 'slider',
+            //         top: '90%',
+            //         start: 50,
+            //         end: 100
+            //     }
+            // ],
             series: [
                 {
                     type: 'candlestick',
@@ -74,7 +93,7 @@
                             {
                                 name: 'Mark',
                                 coord: [
-                                    ts2str(ret.order.startTime - ret.order.startTime % 60000 + 60000),
+                                    ts2str(buyTime),
                                     openPrice
                                 ],
                                 value: openPrice,
@@ -91,22 +110,22 @@
                             },
                             {
                                 name: "shortProfit",
-                                yAxis: ret.order.shortProfit,
+                                yAxis: shortProfit,
                                 lineStyle: {color: '#4bffba'}
                             },
                             {
                                 name: "shortStop",
-                                yAxis: ret.order.shortStop,
+                                yAxis: shortStop,
                                 lineStyle: {color: '#e84242'}
                             },
                             {
                                 name: "longProfit",
-                                yAxis: ret.order.longProfit,
+                                yAxis: longProfit,
                                 lineStyle: {color: '#4bffba'}
                             },
                             {
                                 name: "longStop",
-                                yAxis: ret.order.longStop,
+                                yAxis: longStop,
                                 lineStyle: {color: '#e84242'}
                             },
                         ]
@@ -114,15 +133,92 @@
                 }
             ]
         };
-        ret.lines.forEach(l => {
+        const mark = {
+            longProfit: false,
+            longStop: false,
+            shortStop: false,
+            shortProfit: false,
+        };
+        ret.lines.forEach((l) => {
             option.xAxis.data.push(ts2str(l.openTime));
             option.series[0].data.push([
                 l.open, l.close, l.low, l.high
             ]);
+            if (l.openTime > buyTime) {
+                if (!mark.longProfit && l.high >= longProfit) {
+                    mark.longProfit = true;
+                    console.log("LP");
+                    option.series[1].markPoint.data.push({
+                        name: "LP",
+                        coord: [
+                            ts2str(l.openTime),
+                            longProfit
+                        ],
+                        value: longProfit,
+                        itemStyle: {
+                            color: 'rgb(33,91,0)'
+                        }
+                    });
+                }
+                if (!mark.longStop && l.low <= longStop) {
+                    mark.longStop = true;
+                    console.log("LS");
+                    option.series[1].markPoint.data.push({
+                        name: "LS",
+                        coord: [
+                            ts2str(l.openTime),
+                            longStop
+                        ],
+                        value: longStop,
+                        itemStyle: {
+                            color: 'rgb(134,255,135)'
+                        }
+                    });
+                }
+                if (!mark.shortProfit && l.low <= shortProfit) {
+                    mark.shortProfit = true;
+                    console.log("SP");
+                    option.series[1].markPoint.data.push({
+                        name: "SP",
+                        coord: [
+                            ts2str(l.openTime),
+                            shortProfit
+                        ],
+                        value: shortProfit,
+                        itemStyle: {
+                            color: 'rgb(119,0,0)'
+                        }
+                    });
+                }
+                if (!mark.shortStop && l.high >= shortStop) {
+                    mark.shortStop = true;
+                    console.log("SS");
+                    option.series[1].markPoint.data.push({
+                        name: "SS",
+                        coord: [
+                            ts2str(l.openTime),
+                            shortStop
+                        ],
+                        value: shortStop,
+                        itemStyle: {
+                            color: 'rgb(255,131,131)'
+                        }
+                    });
+                }
+            }
         });
         ec.setOption(option);
-        console.log(option)
-    })
+    };
+
+    document.getElementById('openJsonFileBtn').onclick = function () {
+        openJsonFile().then(ret => {
+            parseJsonFileContent(ret);
+        }).catch(err => {
+            alert(err);
+        });
+    };
+
+    fetch('./../../../config/lines/095d6dea-9717-11ef-958d-e4b97a239394').then(_=>_.json()).then(ret => parseJsonFileContent({data: ret, name: "null"}));
 
 </script>
 </body>
